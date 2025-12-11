@@ -27,6 +27,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* <Header
+          navigationData={[
+            {
+              title: "Articles",
+              href: "/",
+            },
+            // {
+            //   title: "Products",
+            //   href: "#",
+            // },
+            // {
+            //   title: "About Us",
+            //   href: "#",
+            // },
+            // {
+            //   title: "Contacts",
+            //   href: "#",
+            // },
+          ]}
+        /> */}
         {children}
       </body>
     </html>
