@@ -1,17 +1,13 @@
 import { ChevronLeftIcon } from "lucide-react";
 
-import { Separator } from "@/components/ui/separator";
-
 import { BorderBeam } from "@/components/ui/border-beam";
 
 import Logo from "@/components/logo";
 import AuthFullBackgroundShape from "@/assets/svg/auth-full-background-shape";
-import LoginForm from "@/components/login/login-form";
 import Link from "next/link";
-import SigninGithubButton from "@/components/signin-github-button";
-import SigninGoogleButton from "@/components/signin-google-button";
+import MagicLinkForm from "@/components/login/magiclink-form";
 
-const Login = () => {
+const MagicLink = () => {
   return (
     <div className="h-dvh lg:grid lg:grid-cols-6">
       {/* Dashboard Preview */}
@@ -38,15 +34,15 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Login Form */}
+      {/* Magic Link Form */}
       <div className="flex h-full flex-col items-center justify-center py-10 sm:px-5 lg:col-span-3 xl:col-span-2">
         <div className="w-full max-w-md px-6">
           <Link
-            href="/"
+            href="/login"
             className="text-muted-foreground group mb-12 flex items-center gap-2 sm:mb-16 lg:mb-24"
           >
             <ChevronLeftIcon className="transition-transform duration-200 group-hover:-translate-x-0.5" />
-            <p>Back to the website</p>
+            <p>Back to the login page</p>
           </Link>
 
           <div className="flex flex-col gap-6">
@@ -61,38 +57,19 @@ const Login = () => {
               </p>
             </div>
 
-            <p className="text-muted-foreground">
-              Login with{" "}
-              <Link
-                href="/login/magiclink"
-                className="text-foreground hover:underline"
-              >
-                Magic Link
-              </Link>
-            </p>
-
             {/* Form */}
-            <LoginForm />
+            <MagicLinkForm />
 
             <div className="space-y-4">
               <p className="text-muted-foreground text-center">
                 New on our platform?{" "}
                 <Link
-                  href="register"
+                  href="/register"
                   className="text-foreground hover:underline"
                 >
                   Create an account
                 </Link>
               </p>
-
-              <div className="flex items-center gap-4">
-                <Separator className="flex-1" />
-                <p>or</p>
-                <Separator className="flex-1" />
-              </div>
-
-              <SigninGithubButton />
-              <SigninGoogleButton />
             </div>
           </div>
         </div>
@@ -101,4 +78,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default MagicLink;
