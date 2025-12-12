@@ -4,6 +4,7 @@ import { magicLink } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { Resend } from "resend";
 import MagicLinkEmailTemplate from "@/components/emails/magic-link";
+import ResetPasswordTemplate from "@/components/emails/reset-password";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -13,6 +14,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    async sendResetPassword({ user, url }) {
+      await resend.emails.send({
+        from: `next-blog <${process.env.SENDER_MAIL}>`,
+        to: [user.email],
+        subject: "next-blog reset password link",
+        react: ResetPasswordTemplate({ url }),
+      });
+    },
   },
   socialProviders: {
     github: {
@@ -34,7 +43,6 @@ export const auth = betterAuth({
             subject: "next-blog Magic Link",
             react: MagicLinkEmailTemplate({ url: url }),
           });
-          console.log("resend result", res);
         } catch (error) {
           console.error(error);
         }

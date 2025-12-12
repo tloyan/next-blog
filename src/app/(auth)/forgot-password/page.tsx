@@ -5,6 +5,7 @@ import { BorderBeam } from "@/components/ui/border-beam";
 import Logo from "@/components/logo";
 import AuthFullBackgroundShape from "@/assets/svg/auth-full-background-shape";
 import ForgotPasswordForm from "@/components/forgot-password/forgot-password-form";
+import Link from "next/link";
 
 const ForgotPassword = () => {
   return (
@@ -36,13 +37,13 @@ const ForgotPassword = () => {
       {/* Forgot Password Form */}
       <div className="flex h-full flex-col items-center justify-center py-10 sm:px-5 lg:col-span-3 xl:col-span-2">
         <div className="w-full max-w-lg px-6">
-          <a
-            href="#"
+          <Link
+            href="/"
             className="text-muted-foreground group mb-12 flex items-center gap-2 sm:mb-16 lg:mb-24"
           >
             <ChevronLeftIcon className="transition-transform duration-200 group-hover:-translate-x-0.5" />
             <p>Back to the website</p>
-          </a>
+          </Link>
 
           <div className="flex flex-col gap-6">
             <Logo className="gap-3" />
@@ -61,13 +62,13 @@ const ForgotPassword = () => {
               {/* Form */}
               <ForgotPasswordForm />
 
-              <a
-                href="#"
+              <Link
+                href="/login"
                 className="group mx-auto flex w-fit items-center gap-2"
               >
                 <ChevronLeftIcon className="size-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
                 <p>Back to login</p>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
