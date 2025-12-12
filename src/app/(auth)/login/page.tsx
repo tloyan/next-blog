@@ -1,6 +1,5 @@
 import { ChevronLeftIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -9,6 +8,9 @@ import Logo from "@/components/logo";
 import AuthFullBackgroundShape from "@/assets/svg/auth-full-background-shape";
 import LoginForm from "@/components/login/login-form";
 import Link from "next/link";
+import SigninGithubButton from "@/components/signin-github-button";
+import SigninGoogleButton from "@/components/signin-google-button";
+import { Button } from "@/components/ui/button";
 
 const Login = () => {
   return (
@@ -60,12 +62,10 @@ const Login = () => {
               </p>
             </div>
 
-            <p className="text-muted-foreground">
+            {/* <p className="text-muted-foreground">
               Login with{" "}
-              <a href="#" className="text-foreground hover:underline">
-                Magic Link
-              </a>
-            </p>
+              <a className="text-foreground hover:underline">Magic Link</a>
+            </p> */}
 
             {/* Form */}
             <LoginForm />
@@ -87,9 +87,8 @@ const Login = () => {
                 <Separator className="flex-1" />
               </div>
 
-              <Button variant="outline" className="w-full">
-                Sign in with github
-              </Button>
+              <SigninGithubButton />
+              <SigninGoogleButton />
             </div>
           </div>
         </div>

@@ -8,8 +8,8 @@ import Logo from "@/components/logo";
 import AuthFullBackgroundShape from "@/assets/svg/auth-full-background-shape";
 import RegisterForm from "@/components/register/register-form";
 import Link from "next/link";
-import SigninGithubButton from "./signin-github-button";
-import SigninGoogleButton from "./signin-google-button";
+import SigninGithubButton from "@/components/signin-github-button";
+import SigninGoogleButton from "@/components/signin-google-button";
 
 const Register = () => {
   return (
