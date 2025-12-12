@@ -14,6 +14,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false,
     async sendResetPassword({ user, url }) {
       await resend.emails.send({
         from: `next-blog <${process.env.SENDER_MAIL}>`,
