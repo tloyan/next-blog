@@ -7,7 +7,13 @@ import AuthFullBackgroundShape from "@/assets/svg/auth-full-background-shape";
 import ResetPasswordForm from "@/components/reset-password/reset-password-form";
 import Link from "next/link";
 
-const ResetPassword = () => {
+const ResetPassword = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) => {
+  const { token } = await searchParams;
+
   return (
     <div className="h-dvh lg:grid lg:grid-cols-6">
       {/* Dashboard Preview */}
@@ -58,7 +64,7 @@ const ResetPassword = () => {
 
             <div className="space-y-4">
               {/* Form */}
-              <ResetPasswordForm />
+              <ResetPasswordForm token={token} />
 
               <Link
                 href="/login"

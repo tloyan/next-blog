@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
@@ -32,13 +32,11 @@ const formSchema = z
     message: "passwords didn't match",
   });
 
-const ResetPasswordForm = () => {
+const ResetPasswordForm = ({ token }: { token: string | undefined }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const form = useForm({ resolver: zodResolver(formSchema) });
 
