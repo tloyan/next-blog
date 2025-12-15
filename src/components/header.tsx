@@ -1,3 +1,4 @@
+"use client";
 import { MenuIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 
+import ProfileDropdown from "@/components/dropdown-profile";
+
 import Logo from "@/components/logo";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type NavigationItem = {
   title: string;
@@ -20,6 +25,14 @@ type NavigationItem = {
 }[];
 
 const Header = ({ navigationData }: { navigationData: NavigationItem }) => {
+  const {
+    data: session,
+    isPending, //loading state
+    error, //error object
+    refetch, //refetch the session
+  } = authClient.useSession();
+
+  console.log(session);
   return (
     <header className="bg-background sticky top-0 z-50">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-7 sm:px-6">
@@ -35,14 +48,9 @@ const Header = ({ navigationData }: { navigationData: NavigationItem }) => {
               </Link>
             ))}
           </div>
+
           <Separator orientation="vertical" className="!h-6 max-md:hidden" />
-          <Button
-            className="rounded-lg text-base max-md:hidden"
-            size="lg"
-            asChild
-          >
-            <Link href="login">Login</Link>
-          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger className="md:hidden" asChild>
               <Button variant="outline" size="icon">
@@ -57,15 +65,40 @@ const Header = ({ navigationData }: { navigationData: NavigationItem }) => {
                     <Link href={item.href}>{item.title}</Link>
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="!bg-transparent">
-                  <Button className="grow" asChild>
-                    <Link href="/login">Login</Link>
-                  </Button>
-                </DropdownMenuItem>
+                {!session && (
+                  <>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem className="!bg-transparent">
+                      <Button className="grow" asChild>
+                        <Link href="/login">Login</Link>
+                      </Button>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+          {session ? (
+            <ProfileDropdown
+              trigger={
+                <Button variant="ghost" className="h-full p-0">
+                  <Avatar className="size-9.5 rounded-md">
+                    <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                </Button>
+              }
+            />
+          ) : (
+            <Button
+              className="rounded-lg text-base max-md:hidden"
+              size="lg"
+              asChild
+            >
+              <Link href="login">Login</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
