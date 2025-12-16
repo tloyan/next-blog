@@ -11,7 +11,7 @@ export default function FrontLayout({
         navigationData={[
           {
             title: "Articles",
-            href: "/",
+            href: "/articles",
           },
           // {
           //   title: "Products",
