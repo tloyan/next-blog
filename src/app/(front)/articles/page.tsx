@@ -1,59 +1,41 @@
-import Blog from "@/components/blogs-component";
+import { ArticleCard } from "@/components/article-card";
+import db from "@/db";
+import { articles, articlesToTags, tags } from "@/db/schema/articles";
+import { user } from "@/db/schema/auth-schema";
+import { eq, getTableColumns, sql } from "drizzle-orm";
 
-const blogCards = [
-  {
-    image:
-      "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/blog/image-21.png",
-    alt: "Aerial view of ocean and boat",
-    date: "20 JULY 2022",
-    title: "Destination Highlights: Discover Your Next Adventure",
-    author: "Nolan Carder",
-    authorImg: "https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png",
-    role: "SEO Lead",
-    blogLink: "#",
-    authorProfileLink: "#",
-  },
-  {
-    image:
-      "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/blog/image-22.png",
-    alt: "Mountain landscape",
-    date: "02 FEB 2021",
-    title:
-      "Travel Tips & Guides: Expert Advice for Your Journeys and Adventures",
-    author: "Zaire Vetrovs",
-    authorImg: "https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-2.png",
-    role: "Designer",
-    blogLink: "#",
-    authorProfileLink: "#",
-  },
-  {
-    image:
-      "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/blog/image-20.png",
-    alt: "Tropical beach",
-    date: "15 OCT 2024",
-    title: "Travel Trends and Insights: What's New in the World of Travel",
-    author: "Anika Franci",
-    authorImg: "https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png",
-    role: "CTO",
-    blogLink: "#",
-    authorProfileLink: "#",
-  },
-  {
-    image:
-      "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/blog/image-19.png",
-    alt: "Santorini blue domes",
-    date: "11 NOV 2023",
-    title: "Insider Reviews: Top Hotels, Tours, Destinations and Attractions",
-    author: "Phillip George",
-    authorImg: "https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png",
-    role: "Content Writer",
-    blogLink: "#",
-    authorProfileLink: "#",
-  },
-];
+export default async function HomePage() {
+  const data = await db.query.articles.findMany({
+    with: {
+      tags: { with: { tag: true } },
+      author: true,
+    },
+    where: (articles, { eq }) => eq(articles.published, true),
+  });
 
-const BlogPage = () => {
-  return <Blog blogCards={blogCards} />;
-};
+  const cleanedData = data.map((d) => {
+    return {
+      ...d,
+      tags: [
+        ...d.tags.map((tag) => {
+          return tag.tag;
+        }),
+      ],
+    };
+  });
 
-export default BlogPage;
+
+  return (
+    <div className="min-h-screen">
+      <main className="container max-w-7xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-[1fr] gap-12 max-w-2xl mx-auto">
+          <div className="space-y-0">
+            {cleanedData.map((article) => (
+              <ArticleCard key={article.id} {...article} />
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

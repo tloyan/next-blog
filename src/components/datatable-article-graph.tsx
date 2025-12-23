@@ -9,9 +9,12 @@ import {
   ChevronUpIcon,
   EllipsisVerticalIcon,
   EyeIcon,
+  EyeOff,
   PlusIcon,
   SearchIcon,
   Edit2Icon,
+  PlayIcon,
+  PauseIcon,
 } from "lucide-react";
 
 import type {
@@ -72,6 +75,8 @@ import { usePagination } from "@/hooks/use-pagination";
 
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { deleteArticle, publishArticle } from "@/actions/articles/actions";
+import { CreateDialog } from "./create-article-dialog";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -82,12 +87,14 @@ declare module "@tanstack/react-table" {
 
 export type Item = {
   id: string;
-  articleImage?: string;
+  image?: string;
   title: string;
   content: string;
+  authorId: string;
 };
 
-const columns: ColumnDef<Item>[] = [
+//ColumnDef<Item>[]
+const columns = ({ setCurrentArticle, setShowCreate }) => [
   {
     header: "Articles",
     accessorKey: "title",
@@ -96,7 +103,7 @@ const columns: ColumnDef<Item>[] = [
         <div className="bg-primary/5 flex size-10 items-center justify-center rounded-sm">
           <img
             src={
-              row.original.articleImage ||
+              row.original.image ||
               "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/blog/image-26.png"
             }
             alt={row.getValue("title")}
@@ -113,39 +120,107 @@ const columns: ColumnDef<Item>[] = [
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
-    cell: () => (
-      <div className="flex items-center justify-center gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size={"icon"} aria-label="View item">
-              <EyeIcon className="size-4.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Preview</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size={"icon"} aria-label="Delete item">
-              <Edit2Icon className="size-4.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Edit</p>
-          </TooltipContent>
-        </Tooltip>
-        <RowActions />
-      </div>
-    ),
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center justify-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild disabled={!row.original.published}>
+              {row.original.published ? (
+                <Link href={`/articles/${row.original.id}`}>
+                  <Button variant="ghost" size={"icon"} aria-label="View item">
+                    <EyeIcon className="size-4.5" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button variant="ghost" size={"icon"} aria-label="View item">
+                  <EyeOff className="size-4.5" />
+                </Button>
+              )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/my-articles/${row.original.id}/edit`}>
+                <Button variant="ghost" size={"icon"} aria-label="Delete item">
+                  <Edit2Icon className="size-4.5" />
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit</p>
+            </TooltipContent>
+          </Tooltip>
+          {row.original.published ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size={"icon"}
+                  aria-label="Publish item"
+                  onClick={() =>
+                    publishArticle({
+                      id: Number(row.original.id),
+                      published: false,
+                    })
+                  }
+                >
+                  <PauseIcon className="size-4.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Unpublish</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size={"icon"}
+                  aria-label="Publish item"
+                  onClick={() =>
+                    publishArticle({
+                      id: Number(row.original.id),
+                      published: true,
+                    })
+                  }
+                >
+                  <PlayIcon className="size-4.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Publish</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          <RowActions
+            article={row.original}
+            setCurrentArticle={setCurrentArticle}
+            setShowCreate={setShowCreate}
+          />
+        </div>
+      );
+    },
     enableHiding: false,
   },
 ];
 
-const ArticleDatatable = ({ data }: { data: Item[] }) => {
+const ArticleDatatable = ({
+  data,
+  tagsData,
+}: {
+  data: Item[];
+  tagsData: any[];
+}) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const pageSize = 5;
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [currentArticle, setCurrentArticle] = useState(null);
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -154,7 +229,7 @@ const ArticleDatatable = ({ data }: { data: Item[] }) => {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns({ setCurrentArticle, setShowCreate }),
     state: {
       columnFilters,
       pagination,
@@ -205,12 +280,10 @@ const ArticleDatatable = ({ data }: { data: Item[] }) => {
                 </SelectContent>
               </Select>
             </div>
-            <Link href="/my-articles/new">
-              <Button>
-                <PlusIcon />
-                New Article
-              </Button>
-            </Link>
+            <Button onClick={() => setShowCreate(true)}>
+              <PlusIcon />
+              New Article
+            </Button>
           </div>
         </div>
         <Table>
@@ -396,6 +469,16 @@ const ArticleDatatable = ({ data }: { data: Item[] }) => {
           </Pagination>
         </div>
       </div>
+      {showCreate && (
+        <CreateDialog
+          onClose={() => {
+            setCurrentArticle(null);
+            setShowCreate(false);
+          }}
+          availableTags={tagsData}
+          defaultValues={currentArticle}
+        />
+      )}
     </div>
   );
 };
@@ -430,7 +513,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
   );
 }
 
-function RowActions() {
+function RowActions({ article, setShowCreate, setCurrentArticle }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -447,7 +530,15 @@ function RowActions() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentArticle(article);
+              setShowCreate(true);
+            }}
+          >
+            <span>Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => deleteArticle({ id: article.id })}>
             <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
