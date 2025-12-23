@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
 
 type Props = {
   trigger: ReactNode;
@@ -58,9 +59,11 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
             <UserIcon className="text-foreground size-5" />
             <span>My account</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="px-4 py-2.5 text-base">
-            <Book className="text-foreground size-5" />
-            <span>My articles</span>
+          <DropdownMenuItem className="px-4 py-2.5 text-base" asChild>
+            <Link href="/my-articles">
+              <Book className="text-foreground size-5" />
+              <span>My articles</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
