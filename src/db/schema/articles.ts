@@ -29,10 +29,10 @@ export const tags = pgTable("tags", {
 export const articlesToTags = pgTable(
   "articles_to_tags",
   {
-    articleId: integer()
+    articleId: integer("article_id")
       .notNull()
       .references(() => articles.id),
-    tagId: uuid()
+    tagId: uuid("tag_id")
       .notNull()
       .references(() => tags.id),
   },
