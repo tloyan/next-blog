@@ -1,12 +1,6 @@
-import db from "@/db";
-import { articles } from "@/db/schema/articles";
-import { user } from "@/db/schema/auth-schema";
-import { auth } from "@/lib/auth";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 
 import { generateHTML } from "@tiptap/html";
-import { eq, and } from "drizzle-orm";
-import { headers } from "next/headers";
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
@@ -30,6 +24,8 @@ import "@/components/tiptap-templates/simple/simple-editor.scss";
 import { ArticleActions } from "@/components/article-actions";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getPublicArticleWithAuthorById } from "@/actions/articles/actions";
+import { JSONContent } from "@tiptap/core";
 
 export default async function Page({
   params,
@@ -37,21 +33,9 @@ export default async function Page({
   params: Promise<{ id: number }>;
 }) {
   const { id } = await params;
-  // const data = await db
-  //   .select()
-  //   .from(articles)
-  //   .leftJoin(user, eq(user.id, articles.authorId))
-  //   .where(and(eq(articles.published, true), eq(articles.id, id)));
+  const data = await getPublicArticleWithAuthorById(id);
 
-  const data = await db.query.articles.findFirst({
-    where: (article, { eq, and }) =>
-      and(eq(article.published, true), eq(article.id, id)),
-    with: {
-      author: true,
-    },
-  });
-
-  const html = generateHTML(data?.content, [
+  const html = generateHTML(data?.content as JSONContent, [
     StarterKit.configure({
       horizontalRule: false,
       link: {
@@ -70,8 +54,6 @@ export default async function Page({
     Subscript,
     Selection,
   ]);
-
-  // console.log(data);
 
   return (
     <div className="simple-editor-wrapper mt-20">
@@ -101,7 +83,7 @@ export default async function Page({
         <ArticleActions />
 
         <img
-          src={data?.image}
+          src={data?.image as string}
           alt="Image presentation"
           className="w-full h-auto rounded-lg mb-12"
         />

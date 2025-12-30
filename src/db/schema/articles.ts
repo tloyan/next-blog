@@ -31,10 +31,10 @@ export const articlesToTags = pgTable(
   {
     articleId: integer("article_id")
       .notNull()
-      .references(() => articles.id),
+      .references(() => articles.id, { onDelete: "cascade" }),
     tagId: uuid("tag_id")
       .notNull()
-      .references(() => tags.id),
+      .references(() => tags.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.articleId, t.tagId] })]
 );
@@ -61,3 +61,6 @@ export const articleRelation = relations(articles, ({ one, many }) => ({
 export const tagRelation = relations(tags, ({ many }) => ({
   articles: many(articlesToTags),
 }));
+
+export type ArticleModel = typeof articles.$inferSelect;
+export type AddArticleModel = typeof articles.$inferInsert;
