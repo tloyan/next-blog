@@ -16,14 +16,12 @@ import { headers } from "next/headers";
 export async function deleteArticle({ id }: { id: number }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized: No Active Session");
-  try {
-    const article = await getArticleByIdDao(id);
-    if (!article) throw new Error("Something went wrong");
-    if (article.authorId !== session.user.id)
-      throw new Error("Unauthorized: Permission Denied");
-    await deleteArticleByIdDao(id);
-    revalidatePath("/my-articles");
-  } catch {}
+  const article = await getArticleByIdDao(id);
+  if (!article) throw new Error("Something went wrong");
+  if (article.authorId !== session.user.id)
+    throw new Error("Unauthorized: Permission Denied");
+  await deleteArticleByIdDao(id);
+  revalidatePath("/my-articles");
 }
 
 export async function publishArticle({
@@ -35,15 +33,12 @@ export async function publishArticle({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized: No Active Session");
-
-  try {
-    const article = await getArticleByIdDao(id);
-    if (!article) throw new Error("Something went wrong");
-    if (article.authorId !== session.user.id)
-      throw new Error("Unauthorized: Permission Denied");
-    await updateArticleDao(id, { published });
-    revalidatePath("/my-articles");
-  } catch {}
+  const article = await getArticleByIdDao(id);
+  if (!article) throw new Error("Something went wrong");
+  if (article.authorId !== session.user.id)
+    throw new Error("Unauthorized: Permission Denied");
+  await updateArticleDao(id, { published });
+  revalidatePath("/my-articles");
 }
 
 export async function createOrUpdateArticle({
@@ -61,42 +56,30 @@ export async function createOrUpdateArticle({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized: No Active Session");
-
   if (id) {
-    // UPDATE
-    try {
-      // 1 - Verifier que la ressource existe
-      const article = await getArticleByIdDao(id);
-      // Si ressource n'existe pas throw new Error
-      if (!article) throw new Error("Something went wrong !");
-      // Si user na pas acces a la ressource throw new Error
-      if (article.authorId !== session.user.id)
-        throw new Error("Unauthorized: Permission Denied");
-      // Si user a acces | UPDATE
-      const result = await updateArticleWithTagsDao({
-        id,
-        title,
-        excerpt,
-        tagsId,
-        image,
-        authorId: session.user.id,
-      });
-      revalidatePath("/my-articles");
-      return result;
-    } catch {}
+    const article = await getArticleByIdDao(id);
+    if (!article) throw new Error("Something went wrong !");
+    if (article.authorId !== session.user.id)
+      throw new Error("Unauthorized: Permission Denied");
+    const result = await updateArticleWithTagsDao(id, {
+      title,
+      excerpt,
+      tagsId,
+      image,
+      authorId: session.user.id,
+    });
+    revalidatePath("/my-articles");
+    return result;
   } else {
-    // CREATE
-    try {
-      const result = await createArticleWithTagsDao({
-        title,
-        excerpt,
-        tagsId,
-        image,
-        authorId: session.user.id,
-      });
-      revalidatePath("/my-articles");
-      return result;
-    } catch {}
+    const result = await createArticleWithTagsDao({
+      title,
+      excerpt,
+      tagsId,
+      image,
+      authorId: session.user.id,
+    });
+    revalidatePath("/my-articles");
+    return result;
   }
 }
 

@@ -1,10 +1,16 @@
 import db from "@/db";
-import { AddArticleModel, articles, articlesToTags } from "../schema/articles";
+import {
+  AddArticleModel,
+  ArticleModel,
+  articles,
+  articlesToTags,
+  TagModel,
+} from "../schema/articles";
 import { eq } from "drizzle-orm";
 
 export async function createArticleWithTagsDao(
   newArticle: AddArticleModel & { tagsId: string[] }
-) {
+): Promise<ArticleModel> {
   return await db.transaction(async (tx) => {
     const [article] = await tx.insert(articles).values(newArticle).returning();
     await tx.insert(articlesToTags).values(
@@ -17,7 +23,9 @@ export async function createArticleWithTagsDao(
   });
 }
 
-export async function getArticleByIdDao(id: Required<AddArticleModel>["id"]) {
+export async function getArticleByIdDao(
+  id: Required<AddArticleModel>["id"]
+): Promise<ArticleModel | undefined> {
   return await db.query.articles.findFirst({
     where: (articles, { eq }) => eq(articles.id, id),
   });
@@ -25,8 +33,8 @@ export async function getArticleByIdDao(id: Required<AddArticleModel>["id"]) {
 
 export async function updateArticleDao(
   articleId: number,
-  updatedData: AddArticleModel
-) {
+  updatedData: Partial<AddArticleModel>
+): Promise<ArticleModel> {
   const [updatedArticle] = await db
     .update(articles)
     .set(updatedData)
@@ -36,22 +44,23 @@ export async function updateArticleDao(
 }
 
 export async function updateArticleWithTagsDao(
+  articleId: number,
   newArticle: AddArticleModel & { tagsId: string[] }
 ) {
   return await db.transaction(async (tx) => {
     const [article] = await tx
       .update(articles)
       .set(newArticle)
-      .where(eq(articles.id, newArticle.id as number))
+      .where(eq(articles.id, articleId))
       .returning();
 
     await tx
       .delete(articlesToTags)
-      .where(eq(articlesToTags.articleId, newArticle.id as number));
+      .where(eq(articlesToTags.articleId, articleId));
 
     await tx.insert(articlesToTags).values(
       newArticle.tagsId.map((id) => ({
-        articleId: newArticle.id as number,
+        articleId: articleId,
         tagId: id,
       }))
     );
@@ -61,11 +70,13 @@ export async function updateArticleWithTagsDao(
 
 export async function deleteArticleByIdDao(
   id: Required<AddArticleModel>["id"]
-) {
-  await db.delete(articles).where(eq(articles.id, id));
+): Promise<ArticleModel[]> {
+  return await db.delete(articles).where(eq(articles.id, id)).returning();
 }
 
-export async function getAllPublicArticleWithTagsDao() {
+export async function getAllPublicArticleWithTagsDao(): Promise<
+  ArticleModel[]
+> {
   const results = await db.query.articles.findMany({
     with: {
       tags: { with: { tag: true } },
@@ -82,7 +93,7 @@ export async function getAllPublicArticleWithTagsDao() {
 
 export async function getArticleWithAuthorByIdDao(
   id: Required<AddArticleModel>["id"]
-) {
+): Promise<ArticleModel | undefined> {
   return await db.query.articles.findFirst({
     where: (articles, { eq }) => eq(articles.id, id),
     with: {
@@ -93,9 +104,9 @@ export async function getArticleWithAuthorByIdDao(
 
 export async function getAllArticlesWithTagsByAuthorIdDao(
   authorId: Required<AddArticleModel>["authorId"]
-) {
+): Promise<ArticleModel[]> {
   const results = await db.query.articles.findMany({
-    where: (articles, { eq }) => eq(articles.authorId, authorId as string),
+    where: (articles, { eq }) => eq(articles.authorId, authorId),
     with: {
       tags: {
         with: { tag: true },
@@ -109,6 +120,6 @@ export async function getAllArticlesWithTagsByAuthorIdDao(
   }));
 }
 
-export async function getTagsDao() {
+export async function getTagsDao(): Promise<TagModel[]> {
   return await db.query.tags.findMany();
 }

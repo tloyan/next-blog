@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   json,
   pgTable,
@@ -10,15 +11,21 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
-export const articles = pgTable("article", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
-  title: text(),
-  excerpt: text(),
-  content: json(),
-  image: text(),
-  published: boolean().$default(() => false),
-  authorId: text("author_id").references(() => user.id),
-});
+export const articles = pgTable(
+  "article",
+  {
+    id: integer().primaryKey().generatedByDefaultAsIdentity(),
+    title: text(),
+    excerpt: text(),
+    content: json(),
+    image: text(),
+    published: boolean().$default(() => false),
+    authorId: text("author_id")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => [index("articles_authorId_idx").on(table.authorId)]
+);
 
 export const tags = pgTable("tags", {
   id: uuid().primaryKey().defaultRandom(),
@@ -64,3 +71,4 @@ export const tagRelation = relations(tags, ({ many }) => ({
 
 export type ArticleModel = typeof articles.$inferSelect;
 export type AddArticleModel = typeof articles.$inferInsert;
+export type TagModel = typeof tags.$inferSelect;
