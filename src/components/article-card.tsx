@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bookmark, MoreHorizontal } from "lucide-react";
 
-interface ArticleCardProps {
+export interface ArticleCardProps {
   id: string;
   title: string;
   excerpt: string;
@@ -13,8 +13,8 @@ interface ArticleCardProps {
   };
   // date: string;
   // readTime: string;
-  image?: string;
-  tags: string[];
+  image: string;
+  tags: { id: string; label: string; value: string }[];
 }
 
 export function ArticleCard({
@@ -27,8 +27,6 @@ export function ArticleCard({
   image,
   tags,
 }: ArticleCardProps) {
-  // console.log(tags);
-  console.log(tags.map((tag) => tag));
   return (
     <article className="py-6 border-b last:border-0">
       <div className="flex gap-4 items-start">

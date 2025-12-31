@@ -1,10 +1,44 @@
 import * as dotenv from "dotenv";
 
-function initDotEnv() {
-  const environment = process.env.NODE_ENV || "development";
-  const envFilePath =
-    environment === "production" ? ".env.production" : ".env.development";
-  dotenv.config({ path: envFilePath });
+function initDotEnv(
+  environment: string = process.env.NODE_ENV || "development"
+) {
+  console.log("initDotEnv environment", environment);
+  let envFilePath;
+
+  switch (environment) {
+    case "production": {
+      envFilePath = ".env.production";
+      break;
+    }
+    case "test": {
+      envFilePath = ".env.test";
+      break;
+    }
+    default: {
+      envFilePath = ".env.development";
+      break;
+    }
+  }
+
+  const result = dotenv.config({ path: envFilePath });
+
+  if (result.error) {
+    console.error(
+      `Erreur lors du chargement du fichier ${envFilePath}:`,
+      result.error
+    );
+  } else {
+    console.log(`Environnement chargé à partir de ${envFilePath}`);
+  }
+}
+
+export function getEnvFromArg() {
+  const envOption = process.argv[3];
+  console.log("EnvOption: ", envOption);
+  const env = envOption?.split("=")[1];
+  console.log("getEnvFromArg env", env);
+  return env;
 }
 
 export default initDotEnv;

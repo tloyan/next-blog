@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Upload, Trash2 } from "lucide-react";
 import type { Option } from "@/components/ui/multi-select";
 import MultipleSelector from "@/components/ui/multi-select";
-import { createArticle } from "@/actions/articles/actions";
+import { createOrUpdateArticle } from "@/actions/articles/actions";
 import { useRouter } from "next/navigation";
 
 interface CreateDialogProps {
@@ -62,25 +62,18 @@ export function CreateDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log({
-      title,
-      excerpt,
-      tags,
-      image: imageBase64, // ✅ Image en base64
-    });
 
     startTransition(async () => {
       try {
-        const result = await createArticle({
+        const result = await createOrUpdateArticle({
           id: defaultValues?.id,
           title: title.trim(),
           excerpt: excerpt.trim(),
-          tagIds: tags.map((t) => t.id),
+          tagsId: tags.map((t) => t.id as string),
           image: imageBase64,
         });
 
-        if (!result) throw new Error("Failed");
-        // toast.success("Brouillon créé");
+        if (!result) throw new Error("Uncaught Exception");
 
         if (!defaultValues?.id) router.push(`/my-articles/${result.id}/edit`);
         onClose();
