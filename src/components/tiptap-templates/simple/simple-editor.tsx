@@ -7,7 +7,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
+import {
+  EditorContent,
+  EditorContext,
+  JSONContent,
+  useEditor,
+} from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
@@ -197,7 +202,7 @@ export type SimpleEditorRef = {
 };
 
 export const SimpleEditor = forwardRef<SimpleEditorRef>(
-  ({ initialContent }: { initialContent?: string }, ref) => {
+  ({ initialContent }: { initialContent?: JSONContent }, ref) => {
     const isMobile = useIsBreakpoint();
     const { height } = useWindowSize();
     const [mobileView, setMobileView] = useState<

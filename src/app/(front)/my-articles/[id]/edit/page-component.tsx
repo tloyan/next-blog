@@ -10,19 +10,16 @@ import {
 } from "@/components/tiptap-templates/simple/simple-editor";
 
 import { useParams } from "next/navigation";
-import { saveArticle } from "../../new/actions";
+import { saveArticleContent } from "@/actions/articles/actions";
+import { JSONContent } from "@tiptap/core";
 
-export default function WritePage({ content }) {
-  console.log(content);
+export default function WritePage({ content }: { content: JSONContent }) {
   const editorRef = useRef<SimpleEditorRef>(null);
   const params = useParams<{ id: string }>();
 
   async function handleSave() {
     const contentJSON = editorRef.current?.getJSON();
-    await saveArticle({
-      id: parseInt(params.id),
-      content: JSON.stringify(contentJSON),
-    });
+    await saveArticleContent(parseInt(params.id), JSON.stringify(contentJSON));
   }
 
   return (

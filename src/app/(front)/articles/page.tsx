@@ -1,8 +1,8 @@
+import { getAllPublicArticleWithTags } from "@/actions/articles/actions";
 import { ArticleCard } from "@/components/article-card";
-import { getAllPublicArticleWithTagsDao } from "@/db/repository/article-repository";
 
 export default async function HomePage() {
-  const articles = await getAllPublicArticleWithTagsDao();
+  const articles = await getAllPublicArticleWithTags();
 
   return (
     <div className="min-h-screen">

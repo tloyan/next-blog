@@ -13,6 +13,7 @@ export async function createArticleWithTagsDao(
 ): Promise<ArticleModel> {
   return await db.transaction(async (tx) => {
     const [article] = await tx.insert(articles).values(newArticle).returning();
+    if (!newArticle.tagsId.length) return article;
     await tx.insert(articlesToTags).values(
       newArticle.tagsId.map((id) => ({
         articleId: article.id,
@@ -58,6 +59,7 @@ export async function updateArticleWithTagsDao(
       .delete(articlesToTags)
       .where(eq(articlesToTags.articleId, articleId));
 
+    if (!newArticle.tagsId.length) return article;
     await tx.insert(articlesToTags).values(
       newArticle.tagsId.map((id) => ({
         articleId: articleId,

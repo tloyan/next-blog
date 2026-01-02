@@ -1,13 +1,10 @@
 import { Card } from "@/components/ui/card";
-
 import ArticleDatatable from "@/components/datatable-article-graph";
-
-import { getAllUserArticles } from "@/actions/articles/actions";
-import { getTagsDao } from "@/db/repository/article-repository";
+import { getAllUserArticles, getTags } from "@/actions/articles/actions";
 
 export default async function ArticlesPage() {
   const articles = await getAllUserArticles();
-  const tags = await getTagsDao();
+  const tags = await getTags();
 
   return (
     <div className="py-8 sm:py-16 lg:py-24">
