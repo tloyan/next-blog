@@ -201,112 +201,113 @@ export type SimpleEditorRef = {
   isEmpty: () => boolean;
 };
 
-export const SimpleEditor = forwardRef<SimpleEditorRef>(
-  ({ initialContent }: { initialContent?: JSONContent }, ref) => {
-    const isMobile = useIsBreakpoint();
-    const { height } = useWindowSize();
-    const [mobileView, setMobileView] = useState<
-      "main" | "highlighter" | "link"
-    >("main");
-    const toolbarRef = useRef<HTMLDivElement>(null);
+export const SimpleEditor = forwardRef<
+  SimpleEditorRef,
+  { initialContent?: JSONContent }
+>(({ initialContent }: { initialContent?: JSONContent }, ref) => {
+  const isMobile = useIsBreakpoint();
+  const { height } = useWindowSize();
+  const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
+    "main"
+  );
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
-    const editor = useEditor({
-      immediatelyRender: false,
-      editorProps: {
-        attributes: {
-          autocomplete: "off",
-          autocorrect: "off",
-          autocapitalize: "off",
-          "aria-label": "Main content area, start typing to enter text.",
-          class: "simple-editor",
-        },
+  const editor = useEditor({
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        autocomplete: "off",
+        autocorrect: "off",
+        autocapitalize: "off",
+        "aria-label": "Main content area, start typing to enter text.",
+        class: "simple-editor",
       },
-      extensions: [
-        StarterKit.configure({
-          horizontalRule: false,
-          link: {
-            openOnClick: false,
-            enableClickSelection: true,
-          },
-        }),
-        HorizontalRule,
-        TextAlign.configure({ types: ["heading", "paragraph"] }),
-        TaskList,
-        TaskItem.configure({ nested: true }),
-        Highlight.configure({ multicolor: true }),
-        Image,
-        Typography,
-        Superscript,
-        Subscript,
-        Selection,
-        ImageUploadNode.configure({
-          accept: "image/*",
-          maxSize: MAX_FILE_SIZE,
-          limit: 3,
-          upload: handleImageUpload,
-          onError: (error) => console.error("Upload failed:", error),
-        }),
-      ],
-      content: initialContent,
-    });
+    },
+    extensions: [
+      StarterKit.configure({
+        horizontalRule: false,
+        link: {
+          openOnClick: false,
+          enableClickSelection: true,
+        },
+      }),
+      HorizontalRule,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Highlight.configure({ multicolor: true }),
+      Image,
+      Typography,
+      Superscript,
+      Subscript,
+      Selection,
+      ImageUploadNode.configure({
+        accept: "image/*",
+        maxSize: MAX_FILE_SIZE,
+        limit: 3,
+        upload: handleImageUpload,
+        onError: (error) => console.error("Upload failed:", error),
+      }),
+    ],
+    content: initialContent,
+  });
 
-    // ✅ Expose les méthodes de l'éditeur au parent
-    useImperativeHandle(ref, () => ({
-      getJSON: () => editor?.getJSON() ?? null,
-      getHTML: () => editor?.getHTML() ?? "",
-      getText: () => editor?.getText() ?? "",
-      setContent: (content) => editor?.commands.setContent(content),
-      isEmpty: () => editor?.isEmpty ?? true,
-    }));
+  // ✅ Expose les méthodes de l'éditeur au parent
+  useImperativeHandle(ref, () => ({
+    getJSON: () => editor?.getJSON() ?? null,
+    getHTML: () => editor?.getHTML() ?? "",
+    getText: () => editor?.getText() ?? "",
+    setContent: (content) => editor?.commands.setContent(content),
+    isEmpty: () => editor?.isEmpty ?? true,
+  }));
 
-    const rect = useCursorVisibility({
-      editor,
-      overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
-    });
+  const rect = useCursorVisibility({
+    editor,
+    overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
+  });
 
-    useEffect(() => {
-      if (!isMobile && mobileView !== "main") {
-        setMobileView("main");
-      }
-    }, [isMobile, mobileView]);
+  useEffect(() => {
+    if (!isMobile && mobileView !== "main") {
+      setMobileView("main");
+    }
+  }, [isMobile, mobileView]);
 
-    return (
-      <div className="simple-editor-wrapper">
-        <EditorContext.Provider value={{ editor }}>
-          <Toolbar
-            ref={toolbarRef}
-            style={{
-              ...(isMobile
-                ? {
-                    bottom: `calc(100% - ${height - rect.y}px)`,
-                  }
-                : {}),
-            }}
-          >
-            {mobileView === "main" ? (
-              <MainToolbarContent
-                onHighlighterClick={() => setMobileView("highlighter")}
-                onLinkClick={() => setMobileView("link")}
-                isMobile={isMobile}
-              />
-            ) : (
-              <MobileToolbarContent
-                type={mobileView === "highlighter" ? "highlighter" : "link"}
-                onBack={() => setMobileView("main")}
-              />
-            )}
-          </Toolbar>
+  return (
+    <div className="simple-editor-wrapper">
+      <EditorContext.Provider value={{ editor }}>
+        <Toolbar
+          ref={toolbarRef}
+          style={{
+            ...(isMobile
+              ? {
+                  bottom: `calc(100% - ${height - rect.y}px)`,
+                }
+              : {}),
+          }}
+        >
+          {mobileView === "main" ? (
+            <MainToolbarContent
+              onHighlighterClick={() => setMobileView("highlighter")}
+              onLinkClick={() => setMobileView("link")}
+              isMobile={isMobile}
+            />
+          ) : (
+            <MobileToolbarContent
+              type={mobileView === "highlighter" ? "highlighter" : "link"}
+              onBack={() => setMobileView("main")}
+            />
+          )}
+        </Toolbar>
 
-          <EditorContent
-            editor={editor}
-            role="presentation"
-            className="simple-editor-content"
-          />
-        </EditorContext.Provider>
-      </div>
-    );
-  }
-);
+        <EditorContent
+          editor={editor}
+          role="presentation"
+          className="simple-editor-content"
+        />
+      </EditorContext.Provider>
+    </div>
+  );
+});
 
 // ✅ Ajoute le displayName (requis pour forwardRef)
 SimpleEditor.displayName = "SimpleEditor";

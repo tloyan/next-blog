@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { Dispatch, SetStateAction, useId, useState } from "react";
 
 import {
   ChevronDownIcon,
@@ -22,6 +22,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   PaginationState,
+  Row,
   RowData,
 } from "@tanstack/react-table";
 import {
@@ -77,6 +78,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { deleteArticle, publishArticle } from "@/actions/articles/actions";
 import { CreateDialog } from "./create-article-dialog";
+import { ArticleModel, TagModel } from "@/db/schema/articles";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,19 +88,25 @@ declare module "@tanstack/react-table" {
 }
 
 export type Item = {
-  id: string;
+  id: number;
   image?: string;
   title: string;
   content: string;
   authorId: string;
 };
 
-//ColumnDef<Item>[]
-const columns = ({ setCurrentArticle, setShowCreate }) => [
+//ColumnDef<ArticleModel & { tags: TagModel[] }>[]
+const columns = ({
+  setCurrentArticle,
+  setShowCreate,
+}: {
+  setCurrentArticle: Dispatch<SetStateAction<(ArticleModel & { tags: TagModel[] }) | null>>;
+  setShowCreate: Dispatch<SetStateAction<boolean>>;
+}): ColumnDef<ArticleModel & { tags: TagModel[] }>[] => [
   {
     header: "Articles",
     accessorKey: "title",
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<ArticleModel & { tags: TagModel[] }> }) => (
       <div className="flex items-center gap-2">
         <div className="bg-primary/5 flex size-10 items-center justify-center rounded-sm">
           <img
@@ -120,7 +128,7 @@ const columns = ({ setCurrentArticle, setShowCreate }) => [
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<ArticleModel & { tags: TagModel[] }> }) => {
       return (
         <div className="flex items-center justify-center gap-1">
           <Tooltip>
@@ -212,15 +220,17 @@ const ArticleDatatable = ({
   data,
   tagsData,
 }: {
-  data: Item[];
-  tagsData: any[];
+  data: (ArticleModel & { tags: TagModel[] })[];
+  tagsData: TagModel[];
 }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const pageSize = 5;
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [currentArticle, setCurrentArticle] = useState(null);
+  const [showCreate, setShowCreate] = useState<boolean>(false);
+  const [currentArticle, setCurrentArticle] = useState<(ArticleModel & { tags: TagModel[] }) | null>(
+    null
+  );
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -513,7 +523,15 @@ function Filter({ column }: { column: Column<any, unknown> }) {
   );
 }
 
-function RowActions({ article, setShowCreate, setCurrentArticle }) {
+function RowActions({
+  article,
+  setShowCreate,
+  setCurrentArticle,
+}: {
+  article: ArticleModel & { tags: TagModel[] };
+  setShowCreate: Dispatch<SetStateAction<boolean>>;
+  setCurrentArticle: Dispatch<SetStateAction<(ArticleModel & { tags: TagModel[] }) | null>>;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -7,6 +7,7 @@ import {
   TagModel,
 } from "../schema/articles";
 import { eq } from "drizzle-orm";
+import { UserModel } from "../schema/auth-schema";
 
 export async function createArticleWithTagsDao(
   newArticle: AddArticleModel & { tagsId: string[] }
@@ -77,7 +78,7 @@ export async function deleteArticleByIdDao(
 }
 
 export async function getAllPublicArticleWithTagsDao(): Promise<
-  ArticleModel[]
+  (ArticleModel & { tags: TagModel[]; author: UserModel })[]
 > {
   const results = await db.query.articles.findMany({
     with: {
@@ -95,7 +96,7 @@ export async function getAllPublicArticleWithTagsDao(): Promise<
 
 export async function getArticleWithAuthorByIdDao(
   id: Required<AddArticleModel>["id"]
-): Promise<ArticleModel | undefined> {
+): Promise<(ArticleModel & { author: UserModel }) | undefined> {
   return await db.query.articles.findFirst({
     where: (articles, { eq }) => eq(articles.id, id),
     with: {
@@ -106,7 +107,7 @@ export async function getArticleWithAuthorByIdDao(
 
 export async function getAllArticlesWithTagsByAuthorIdDao(
   authorId: Required<AddArticleModel>["authorId"]
-): Promise<ArticleModel[]> {
+): Promise<(ArticleModel & { tags: TagModel[] })[]> {
   const results = await db.query.articles.findMany({
     where: (articles, { eq }) => eq(articles.authorId, authorId),
     with: {
