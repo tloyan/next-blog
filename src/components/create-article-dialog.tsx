@@ -9,17 +9,12 @@ import type { Option } from "@/components/ui/multi-select";
 import MultipleSelector from "@/components/ui/multi-select";
 import { createOrUpdateArticle } from "@/actions/articles/actions";
 import { useRouter } from "next/navigation";
+import { ArticleModel, TagModel } from "@/db/schema/articles";
 
 interface CreateDialogProps {
   onClose: () => void;
-  availableTags: { id: string; value: string; label: string }[];
-  defaultValues?: {
-    id: number;
-    title: string;
-    excerpt: string;
-    tags: { id: string; value: string; label: string }[];
-    image: string;
-  } | null;
+  availableTags: TagModel[];
+  defaultValues?: (ArticleModel & { tags: TagModel[] }) | null;
 }
 
 export function CreateDialog({
@@ -29,8 +24,14 @@ export function CreateDialog({
 }: CreateDialogProps) {
   const [title, setTitle] = useState(defaultValues?.title ?? "");
   const [excerpt, setExcerpt] = useState(defaultValues?.excerpt ?? "");
-  const [tags, setTags] = useState<Option[]>(defaultValues?.tags ?? []);
-  const [imageBase64, setImageBase64] = useState(defaultValues?.image);
+  const [tags, setTags] = useState<Option[]>(
+    defaultValues?.tags
+      ?.filter((tag): tag is { id: string; label: string; value: string } =>
+        tag.label !== null && tag.value !== null
+      )
+      .map(tag => ({ id: tag.id, value: tag.value, label: tag.label })) ?? []
+  );
+  const [imageBase64, setImageBase64] = useState(defaultValues?.image ?? undefined);
   const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();
 
@@ -57,7 +58,7 @@ export function CreateDialog({
   }
 
   function handleRemoveImage() {
-    setImageBase64(null);
+    setImageBase64(undefined);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -182,7 +183,11 @@ export function CreateDialog({
               }}
               value={tags}
               onChange={setTags}
-              defaultOptions={availableTags}
+              defaultOptions={availableTags
+                .filter((tag): tag is { id: string; label: string; value: string } =>
+                  tag.label !== null && tag.value !== null
+                )
+                .map(tag => ({ id: tag.id, value: tag.value, label: tag.label }))}
               placeholder="Select categories"
               hidePlaceholderWhenSelected
               emptyIndicator={

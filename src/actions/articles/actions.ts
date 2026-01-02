@@ -1,27 +1,19 @@
 "use server";
 
 import {
-  createArticleWithTagsDao,
-  deleteArticleByIdDao,
-  getAllArticlesWithTagsByAuthorIdDao,
-  getArticleByIdDao,
-  getArticleWithAuthorByIdDao,
-  updateArticleDao,
-  updateArticleWithTagsDao,
-} from "@/db/repository/article-repository";
-import { auth } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+  createOrUpdateArticleService,
+  deleteArticleService,
+  getAllPublicArticleWithTagsService,
+  getAllUserArticlesService,
+  getPublicArticleWithAuthorByIdService,
+  getTagsService,
+  getUserArticleByIdService,
+  publishArticleService,
+  updateArticleContentService,
+} from "@/services/article-service";
 
 export async function deleteArticle({ id }: { id: number }) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Unauthorized: No Active Session");
-  const article = await getArticleByIdDao(id);
-  if (!article) throw new Error("Something went wrong");
-  if (article.authorId !== session.user.id)
-    throw new Error("Unauthorized: Permission Denied");
-  await deleteArticleByIdDao(id);
-  revalidatePath("/my-articles");
+  return await deleteArticleService(id);
 }
 
 export async function publishArticle({
@@ -31,14 +23,7 @@ export async function publishArticle({
   id: number;
   published: boolean;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Unauthorized: No Active Session");
-  const article = await getArticleByIdDao(id);
-  if (!article) throw new Error("Something went wrong");
-  if (article.authorId !== session.user.id)
-    throw new Error("Unauthorized: Permission Denied");
-  await updateArticleDao(id, { published });
-  revalidatePath("/my-articles");
+  return await publishArticleService({ id, published });
 }
 
 export async function createOrUpdateArticle({
@@ -54,46 +39,35 @@ export async function createOrUpdateArticle({
   tagsId: string[];
   image?: string;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Unauthorized: No Active Session");
-  if (id) {
-    const article = await getArticleByIdDao(id);
-    if (!article) throw new Error("Something went wrong !");
-    if (article.authorId !== session.user.id)
-      throw new Error("Unauthorized: Permission Denied");
-    const result = await updateArticleWithTagsDao(id, {
-      title,
-      excerpt,
-      tagsId,
-      image,
-      authorId: session.user.id,
-    });
-    revalidatePath("/my-articles");
-    return result;
-  } else {
-    const result = await createArticleWithTagsDao({
-      title,
-      excerpt,
-      tagsId,
-      image,
-      authorId: session.user.id,
-    });
-    revalidatePath("/my-articles");
-    return result;
-  }
+  return await createOrUpdateArticleService({
+    id,
+    title,
+    excerpt,
+    tagsId,
+    image,
+  });
 }
 
 export async function getPublicArticleWithAuthorById(id: number) {
-  const article = await getArticleWithAuthorByIdDao(id);
-  if (!article || !article.published)
-    throw new Error(
-      "Something went wrong: Article doesn't exist or is not public"
-    );
-  return article;
+  return await getPublicArticleWithAuthorByIdService(id);
 }
 
 export async function getAllUserArticles() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Unauthorized: No Active Session");
-  return await getAllArticlesWithTagsByAuthorIdDao(session.user.id);
+  return await getAllUserArticlesService();
+}
+
+export async function saveArticleContent(articleId: number, content: string) {
+  return await updateArticleContentService(articleId, { content });
+}
+
+export async function getUserArticle(articleId: number) {
+  return await getUserArticleByIdService(articleId);
+}
+
+export async function getAllPublicArticleWithTags() {
+  return await getAllPublicArticleWithTagsService();
+}
+
+export async function getTags() {
+  return await getTagsService();
 }

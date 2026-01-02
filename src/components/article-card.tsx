@@ -2,9 +2,11 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bookmark, MoreHorizontal } from "lucide-react";
+import { ArticleModel, TagModel } from "@/db/schema/articles";
+import { UserModel } from "@/db/schema/auth-schema";
 
 export interface ArticleCardProps {
-  id: string;
+  id: number;
   title: string;
   excerpt: string;
   author: {
@@ -26,7 +28,7 @@ export function ArticleCard({
   // readTime,
   image,
   tags,
-}: ArticleCardProps) {
+}: ArticleModel & { tags: TagModel[]; author: UserModel }) {
   return (
     <article className="py-6 border-b last:border-0">
       <div className="flex gap-4 items-start">
@@ -34,7 +36,7 @@ export function ArticleCard({
           <div className="flex items-center gap-2 mb-3">
             <Link href={`/profile/${author.name}`}>
               <Avatar className="h-6 w-6">
-                <AvatarImage src={author.avatar || "/placeholder.svg"} />
+                <AvatarImage src={author.image || "/placeholder.svg"} />
                 <AvatarFallback>{author.name[0]}</AvatarFallback>
               </Avatar>
             </Link>
@@ -92,7 +94,7 @@ export function ArticleCard({
           <Link href={`/articles/${id}`} className="hidden sm:block">
             <img
               src={image || "/placeholder.svg"}
-              alt={title}
+              alt={title ?? undefined}
               className="w-32 h-32 object-cover rounded"
             />
           </Link>
